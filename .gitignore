@@ -10,3 +10,9 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Local credentials and environment overrides
+h96_credentials/
+*.pem
+.env
+.env.*

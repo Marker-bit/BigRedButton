@@ -1,0 +1,56 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v8
+        with:
+          version: "0.11.32"
+
+      - name: Install Python
+        run: uv python install 3.13
+
+      - name: Verify tag and lock file
+        run: |
+          PROJECT_VERSION="$(uv run python -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')"
+          test "v$PROJECT_VERSION" = "$GITHUB_REF_NAME"
+          uv lock --check
+
+      - name: Build wheel
+        run: uv build --wheel
+
+      - name: Smoke-test wheel
+        run: |
+          WHEEL="$(find dist -maxdepth 1 -type f -name '*.whl' -print -quit)"
+          test -n "$WHEEL"
+          uv run --isolated --no-project --with "$WHEEL" python -c "import main, remote, rutube_api"
+
+      - name: Create release metadata
+        run: |
+          WHEEL="$(find dist -maxdepth 1 -type f -name '*.whl' -print -quit)"
+          WHEEL_NAME="$(basename "$WHEEL")"
+          WHEEL_SHA256="$(sha256sum "$WHEEL" | awk '{print $1}')"
+          printf '{"version":"%s","wheel":"%s","sha256":"%s"}\n' \
+            "$GITHUB_REF_NAME" "$WHEEL_NAME" "$WHEEL_SHA256" > dist/release.json
+          sha256sum "$WHEEL" > dist/SHA256SUMS
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            dist/*.whl dist/SHA256SUMS dist/release.json run.sh \
+            --verify-tag \
+            --generate-notes
