@@ -1,15 +1,11 @@
 import asyncio
-import os
-from importlib.metadata import PackageNotFoundError, version as package_version
 
 # from adb import Device, get_devices, open_url
 from config import (
     get_last_picked,
-    get_last_notified_version,
     get_last_visible_season,
     init_config,
     set_last_picked,
-    set_last_notified_version,
     set_last_visible_season,
 )
 from iphelp import get_ethernet_neigh
@@ -21,19 +17,6 @@ from series import EpisodeIndex, parse_season_episode
 
 SHOW_ID = "380158"
 DEFAULT_SEASON = 3
-
-
-def notify_update(current_version: str | None = None) -> None:
-    if current_version is None:
-        try:
-            current_version = package_version("bigredbutton")
-        except PackageNotFoundError:
-            return
-    if get_last_notified_version() == current_version:
-        return
-    if os.environ.get("BIGREDBUTTON_UPDATE_NOTIFIED") != "1":
-        print(f"BigRedButton обновлён до версии v{current_version}.")
-    set_last_notified_version(current_version)
 
 
 def parse_saved_episode(value: str | None) -> EpisodeIndex | None:
@@ -60,7 +43,6 @@ def get_season_options(season: int) -> list[tuple[EpisodeIndex, Episode]]:
 async def main():
     kill_by_name("Koala Clash")
     init_config()
-    notify_update()
     neigh = get_ethernet_neigh()
     if len(neigh) != 1:
         print("Проверьте подключение кабеля Ethernet.")

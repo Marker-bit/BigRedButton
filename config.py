@@ -38,15 +38,3 @@ def get_last_visible_season(show_id: str) -> int | None:
 def set_last_visible_season(show_id: str, season: int) -> None:
     path = config_path / f"{show_id}_last_visible_season.txt"
     path.write_text(str(season), encoding="utf-8")
-
-
-def get_last_notified_version() -> str | None:
-    path = config_path / "last_notified_version.txt"
-    if not path.exists():
-        return None
-    return path.read_text(encoding="utf-8").strip() or None
-
-
-def set_last_notified_version(version: str) -> None:
-    path = config_path / "last_notified_version.txt"
-    path.write_text(version, encoding="utf-8")

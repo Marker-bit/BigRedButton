@@ -80,7 +80,6 @@ download_update() {
 
     if [ -n "$previous_wheel" ] && [ "$previous_wheel" != "$wheel_path" ]; then
         echo "BigRedButton обновлён до версии $version."
-        export BIGREDBUTTON_UPDATE_NOTIFIED=1
     fi
 }
 
