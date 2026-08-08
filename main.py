@@ -58,7 +58,7 @@ async def choose_and_open_episode(remote):
         print("Неверный эпизод")
         return
 
-    input("Откройте RUTUBE на телевизоре и нажмите Enter...")
+    input("Откройте RUTUBE на телевизоре и нажмите клавишу Ввод...")
     await open_rutube_video(
         remote, picked_episode.url.split("/video/")[1].replace("/", "")
     )
@@ -69,5 +69,5 @@ if __name__ == "__main__":
         asyncio.run(main())
     except Exception as err:  # noqa: BLE001
         print(
-            f'Произошла ошибка "{err}", нажмите Enter для завершения.\nЗапустите программу заново после завершения.'
+            f'Произошла ошибка: "{err}". Нажмите клавишу Ввод для завершения.\nПосле этого запустите программу заново.'
         )

@@ -10,7 +10,7 @@ def kill_by_name(name: str):
             try:
                 proc.send_signal(signal.SIGINT)
                 proc.send_signal(signal.SIGINT)
-                print(f"Sent Ctrl+C to {name} (PID: {proc.info['pid']})")
+                print(f"Приложение {name} остановлено (PID: {proc.info['pid']}).")
                 break
             except (psutil.NoSuchProcess, psutil.AccessDenied) as e:
-                print(f"Could not signal PID {proc.info['pid']}: {e}")
+                print(f"Не удалось остановить процесс {proc.info['pid']}: {e}")

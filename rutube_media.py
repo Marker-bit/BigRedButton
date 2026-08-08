@@ -67,13 +67,13 @@ def _run_adb(*args: str, serial: str | None = None) -> str:
         )
     except FileNotFoundError as error:
         raise AdbError(
-            "ADB was not found. Install Android Platform Tools and ensure "
-            "`adb` is available in PATH."
+            "ADB не найден. Установите Android Platform Tools и убедитесь, "
+            "что команда `adb` доступна через PATH."
         ) from error
 
     if result.returncode != 0:
         message = result.stderr.strip() or result.stdout.strip()
-        raise AdbError(message or "ADB command failed")
+        raise AdbError(message or "Команда ADB завершилась с ошибкой")
 
     return result.stdout
 
@@ -83,7 +83,7 @@ def _extract_rutube_session(dump: str) -> str:
     package_index = dump.find(package_marker)
 
     if package_index == -1:
-        raise RutubeSessionNotFound("No active RuTube media session found")
+        raise RutubeSessionNotFound("Активный сеанс RUTUBE не найден")
 
     # The next session normally begins with another deeply-indented
     # MediaSession record. Limiting the section avoids parsing another app.
@@ -105,7 +105,7 @@ def _extract_title(session: str) -> str:
     )
 
     if metadata_match is None:
-        return "Unknown title"
+        return "Неизвестное название"
 
     description = metadata_match.group(1).strip()
 
@@ -114,7 +114,7 @@ def _extract_title(session: str) -> str:
     # In RuTube's output, the first value is the useful video title.
     title = description.split(", null", maxsplit=1)[0].strip()
 
-    return title or "Unknown title"
+    return title or "Неизвестное название"
 
 
 def get_rutube_playback(
@@ -154,7 +154,7 @@ def get_rutube_playback(
 
     if state_match is None:
         raise RutubeSessionNotFound(
-            "RuTube session exists, but playback state is unavailable"
+            "Сеанс RUTUBE найден, но состояние воспроизведения недоступно"
         )
 
     state_name = state_match.group(1)
@@ -172,6 +172,6 @@ def get_rutube_playback(
 if __name__ == "__main__":
     playback = get_rutube_playback()
 
-    print(f"Title: {playback.title}")
-    print(f"Progress: {playback.progress_formatted}")
-    print(f"Playing: {playback.is_playing}")
+    print(f"Название: {playback.title}")
+    print(f"Прогресс: {playback.progress_formatted}")
+    print(f"Воспроизводится: {'да' if playback.is_playing else 'нет'}")

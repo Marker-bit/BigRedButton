@@ -55,7 +55,7 @@ download_update() {
             return 1
         fi
         if [ "$(checksum "$tmp_wheel")" != "$expected" ]; then
-            echo "Downloaded wheel failed checksum verification." >&2
+            echo "Проверка контрольной суммы загруженного обновления не пройдена." >&2
             rm -f "$tmp_wheel"
             return 1
         fi
@@ -67,7 +67,7 @@ download_update() {
     mv "$tmp_current" "$CURRENT_FILE"
 }
 
-download_update || echo "Update unavailable; using the cached release." >&2
+download_update || echo "Обновление недоступно; запускаю сохранённую версию." >&2
 
 wheel_path=""
 if [ -f "$CURRENT_FILE" ]; then
@@ -75,13 +75,13 @@ if [ -f "$CURRENT_FILE" ]; then
 fi
 
 if [ -z "$wheel_path" ] || [ ! -f "$wheel_path" ]; then
-    echo "No verified BigRedButton release is cached." >&2
-    echo "Connect to the Internet and run this launcher again." >&2
+    echo "На компьютере нет проверенной версии BigRedButton." >&2
+    echo "Подключитесь к Интернету и запустите программу ещё раз." >&2
     exit 1
 fi
 
 uv run --isolated --no-project --with "$wheel_path" python -m main
 status=$?
-printf '\nPress Enter to close... '
+printf '\nНажмите клавишу Ввод, чтобы закрыть окно... '
 read -r _
 exit "$status"
