@@ -97,11 +97,13 @@ if [ -z "$wheel_path" ] || [ ! -f "$wheel_path" ]; then
     exit 1
 fi
 
+if [ -n "$updated_version" ]; then
+    printf '\033[1;32mBigRedButton обновлён до версии %s.\033[0m\n' "$updated_version"
+    sleep 2
+fi
+
 uv run --isolated --no-project --with "$wheel_path" python -m main
 status=$?
-if [ -n "$updated_version" ]; then
-    printf '\nBigRedButton обновлён до версии %s.\n' "$updated_version"
-fi
 printf '\nНажмите клавишу Enter, чтобы закрыть окно... '
 read -r _
 exit "$status"
