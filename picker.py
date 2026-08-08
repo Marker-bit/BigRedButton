@@ -107,7 +107,10 @@ def choose_episode(
     typed = ""
     message = None
     try:
-        tty.setraw(sys.stdin.fileno())
+        # Keep the terminal's output processing enabled so each newline also
+        # returns to column zero. Raw mode disables that and creates a
+        # staircase-shaped screen on Linux terminals.
+        tty.setcbreak(sys.stdin.fileno())
         sys.stdout.write(HIDE_CURSOR)
         while True:
             sys.stdout.write(

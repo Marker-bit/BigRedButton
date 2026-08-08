@@ -80,6 +80,7 @@ download_update() {
 
     if [ -n "$previous_wheel" ] && [ "$previous_wheel" != "$wheel_path" ]; then
         echo "BigRedButton обновлён до версии $version."
+        export BIGREDBUTTON_UPDATE_NOTIFIED=1
     fi
 }
 
@@ -98,6 +99,6 @@ fi
 
 uv run --isolated --no-project --with "$wheel_path" python -m main
 status=$?
-printf '\nНажмите клавишу Ввод, чтобы закрыть окно... '
+printf '\nНажмите клавишу Enter, чтобы закрыть окно... '
 read -r _
 exit "$status"
