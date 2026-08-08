@@ -8,6 +8,7 @@ RELEASES_DIR="$APP_DIR/releases"
 CURRENT_FILE="$APP_DIR/current-wheel"
 METADATA_FILE="$APP_DIR/release.json"
 UPDATE_TIMEOUT_SECONDS=5
+updated_version=""
 
 export PATH="$HOME/.local/bin:$PATH"
 
@@ -79,7 +80,7 @@ download_update() {
     mv "$tmp_current" "$CURRENT_FILE"
 
     if [ -n "$previous_wheel" ] && [ "$previous_wheel" != "$wheel_path" ]; then
-        echo "BigRedButton обновлён до версии $version."
+        updated_version="$version"
     fi
 }
 
@@ -98,6 +99,9 @@ fi
 
 uv run --isolated --no-project --with "$wheel_path" python -m main
 status=$?
+if [ -n "$updated_version" ]; then
+    printf '\nBigRedButton обновлён до версии %s.\n' "$updated_version"
+fi
 printf '\nНажмите клавишу Enter, чтобы закрыть окно... '
 read -r _
 exit "$status"
