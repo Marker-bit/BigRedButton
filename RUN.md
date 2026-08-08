@@ -45,7 +45,7 @@ Cached data is stored under `~/BigRedButton`:
 │   └── key.pem
 ├── release.json
 ├── releases/
-│   └── v0.1.7/bigredbutton-0.1.7-py3-none-any.whl
+│   └── v0.1.8/bigredbutton-0.1.8-py3-none-any.whl
 └── run.sh
 ```
 
@@ -93,7 +93,7 @@ uv run --isolated --no-project --with ./bigredbutton*.whl python -m main
 
 Do not use that wildcard in the release cache because it can contain multiple
 versions. The launcher uses `current-wheel` to select exactly one verified
-file and does not depend on a hard-coded version such as `0.1.7`.
+file and does not depend on a hard-coded version such as `0.1.8`.
 
 ## Build locally
 
@@ -114,9 +114,9 @@ pushed. The tag must match the version in `pyproject.toml` exactly.
 uv version --bump patch
 uv lock
 git add pyproject.toml uv.lock
-git commit -m "Release v0.1.8"
-git tag v0.1.8
-git push origin main v0.1.8
+git commit -m "Release v0.1.9"
+git tag v0.1.9
+git push origin main v0.1.9
 ```
 
 GitHub Actions builds and smoke-tests the wheel, then publishes the wheel,
