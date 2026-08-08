@@ -1,12 +1,43 @@
 import asyncio
 
 # from adb import Device, get_devices, open_url
-from config import get_last_picked, init_config, set_last_picked
+from config import (
+    get_last_picked,
+    get_last_visible_season,
+    init_config,
+    set_last_picked,
+    set_last_visible_season,
+)
 from iphelp import get_ethernet_neigh
+from picker import choose_episode
 from processes import kill_by_name
 from remote import get_remote, open_rutube_video
 from rutube_api import Episode, get_tv_show_series
 from series import EpisodeIndex, parse_season_episode
+
+SHOW_ID = "380158"
+DEFAULT_SEASON = 3
+
+
+def parse_saved_episode(value: str | None) -> EpisodeIndex | None:
+    if value is None:
+        return None
+    try:
+        season, episode = (int(part) for part in value.strip().split(":"))
+    except (TypeError, ValueError):
+        return None
+    if season < 1 or episode < 1:
+        return None
+    return EpisodeIndex(season=season, episode=episode)
+
+
+def get_season_options(season: int) -> list[tuple[EpisodeIndex, Episode]]:
+    options: list[tuple[EpisodeIndex, Episode]] = []
+    for episode in get_tv_show_series(SHOW_ID, season):
+        idx = parse_season_episode(episode.title)
+        if idx and idx.season == season:
+            options.append((idx, episode))
+    return options
 
 
 async def main():
@@ -26,39 +57,29 @@ async def main():
 
 
 async def choose_and_open_episode(remote):
+    last_picked = parse_saved_episode(get_last_picked(SHOW_ID))
+    episode_options = {
+        season: get_season_options(season) for season in range(1, DEFAULT_SEASON + 1)
+    }
+    indices = {
+        season: tuple(idx for idx, _ in options)
+        for season, options in episode_options.items()
+    }
+    selection = choose_episode(
+        indices,
+        last_picked,
+        initial_visible_season=get_last_visible_season(SHOW_ID),
+        on_visible_season_changed=lambda season: set_last_visible_season(
+            SHOW_ID, season
+        ),
+    )
+    picked_episode = next(
+        episode
+        for idx, episode in episode_options[selection.season]
+        if idx == selection
+    )
 
-    last_picked = get_last_picked("380158")
-    last_season = int(last_picked.split(":")[0]) if last_picked is not None else None
-    episodes = get_tv_show_series("380158", last_season or 3)
-    options: list[tuple[EpisodeIndex, Episode]] = []
-    for episode in episodes:
-        idx = parse_season_episode(episode.title)
-        if not idx:
-            continue
-        options.append((idx, episode))
-        s = f"{idx.season}:{idx.episode} - Сезон {idx.season}, серия {idx.episode}"
-        if last_picked == f"{idx.season}:{idx.episode}":
-            s += " (выбрали в последний раз)"
-        print(s)
-
-    opt = input("Выберите эпизод: ")
-    if ":" not in opt and opt.isdigit():
-        opt = f"{opt}:1"
-    season, episode = opt.split(":")
-    season, episode = int(season), int(episode)
-    set_last_picked("380158", f"{season}:{episode}")
-
-    picked_episode: Episode | None = None
-    for option in options:
-        if option[0].season == season and option[0].episode == episode:
-            picked_episode = option[1]
-            break
-
-    if not picked_episode:
-        print("Неверный эпизод")
-        return
-
-    input("Откройте RUTUBE на телевизоре и нажмите клавишу Ввод...")
+    set_last_picked(SHOW_ID, f"{selection.season}:{selection.episode}")
     await open_rutube_video(
         remote, picked_episode.url.split("/video/")[1].replace("/", "")
     )

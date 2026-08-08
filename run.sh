@@ -7,6 +7,7 @@ RELEASE_BASE_URL="${BIGREDBUTTON_RELEASE_BASE_URL:-https://github.com/Marker-bit
 RELEASES_DIR="$APP_DIR/releases"
 CURRENT_FILE="$APP_DIR/current-wheel"
 METADATA_FILE="$APP_DIR/release.json"
+UPDATE_TIMEOUT_SECONDS=5
 
 export PATH="$HOME/.local/bin:$PATH"
 
@@ -27,10 +28,22 @@ json_string() {
     sed -n "s/.*\"$key\":\"\([^\"]*\)\".*/\1/p" "$METADATA_FILE"
 }
 
+download() {
+    curl --fail --silent --show-error --location \
+        --connect-timeout "$UPDATE_TIMEOUT_SECONDS" \
+        --max-time "$UPDATE_TIMEOUT_SECONDS" \
+        --retry 0 \
+        "$1" -o "$2"
+}
+
 download_update() {
+    previous_wheel=""
+    if [ -f "$CURRENT_FILE" ]; then
+        IFS= read -r previous_wheel <"$CURRENT_FILE"
+    fi
+
     tmp_metadata="$METADATA_FILE.tmp.$$"
-    if ! curl --fail --silent --show-error --location \
-        "$RELEASE_BASE_URL/release.json" -o "$tmp_metadata"; then
+    if ! download "$RELEASE_BASE_URL/release.json" "$tmp_metadata"; then
         rm -f "$tmp_metadata"
         return 1
     fi
@@ -49,8 +62,7 @@ download_update() {
 
     if [ ! -f "$wheel_path" ] || [ "$(checksum "$wheel_path")" != "$expected" ]; then
         tmp_wheel="$wheel_path.tmp.$$"
-        if ! curl --fail --silent --show-error --location \
-            "$RELEASE_BASE_URL/$wheel" -o "$tmp_wheel"; then
+        if ! download "$RELEASE_BASE_URL/$wheel" "$tmp_wheel"; then
             rm -f "$tmp_wheel"
             return 1
         fi
@@ -65,6 +77,10 @@ download_update() {
     tmp_current="$CURRENT_FILE.tmp.$$"
     printf '%s\n' "$wheel_path" >"$tmp_current"
     mv "$tmp_current" "$CURRENT_FILE"
+
+    if [ -n "$previous_wheel" ] && [ "$previous_wheel" != "$wheel_path" ]; then
+        echo "BigRedButton обновлён до версии $version."
+    fi
 }
 
 download_update || echo "Обновление недоступно; запускаю сохранённую версию." >&2

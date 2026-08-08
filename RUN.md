@@ -45,7 +45,7 @@ Cached data is stored under `~/BigRedButton`:
 │   └── key.pem
 ├── release.json
 ├── releases/
-│   └── v0.1.9/bigredbutton-0.1.9-py3-none-any.whl
+│   └── v0.1.13/bigredbutton-0.1.13-py3-none-any.whl
 └── run.sh
 ```
 
@@ -58,8 +58,12 @@ part of the wheel, release, or repository.
 2. Start `run.sh`.
 3. Enter the pairing code shown on the TV. This happens only once unless the
    TV is reset or `~/BigRedButton/h96_credentials` is removed.
-4. Pick an episode, for example `3:5`.
-5. Keep RUTUBE open and press Enter when prompted.
+4. Use the left/right arrow keys to change which season is displayed. Enter
+   any season and episode separated by a space, for example `1 3`; the typed
+   selection is independent of the season currently displayed. The displayed
+   season is remembered for the next launch. Press Enter without typing to
+   reuse the previous selection.
+5. The selected episode opens immediately in the already-running RUTUBE app.
 
 Opening RUTUBE manually avoids the firmware/app bug that leaves both the home
 screen and video screen active. The program sends only the `rutube://` episode
@@ -93,7 +97,7 @@ uv run --isolated --no-project --with ./bigredbutton*.whl python -m main
 
 Do not use that wildcard in the release cache because it can contain multiple
 versions. The launcher uses `current-wheel` to select exactly one verified
-file and does not depend on a hard-coded version such as `0.1.9`.
+file and does not depend on a hard-coded version such as `0.1.13`.
 
 ## Build locally
 
@@ -114,9 +118,9 @@ pushed. The tag must match the version in `pyproject.toml` exactly.
 uv version --bump patch
 uv lock
 git add pyproject.toml uv.lock
-git commit -m "Release v0.1.10"
-git tag v0.1.10
-git push origin main v0.1.10
+git commit -m "Release v0.1.14"
+git tag v0.1.14
+git push origin main v0.1.14
 ```
 
 GitHub Actions builds and smoke-tests the wheel, then publishes the wheel,
